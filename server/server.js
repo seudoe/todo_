@@ -234,5 +234,5 @@ Explantion : the spelling header , instead or headers
 
 4. checkFunc working only once
 problem : once the check button is clicked, it stops functioning.. i.e.  it works only once
-
+Explanation : i was updating the eventListeners before rendering 
 */

@@ -86,11 +86,12 @@ export function updateEventListeners(){
     function checkFunc(index){
         doneNotes.unshift(new List(notes[index].id, notes[index].note, notes[index].time));
         notes.splice(index, 1);
-        updateEventListeners();
         renderDoneNotes(); renderNotes();
         updateDb();
+        updateEventListeners();
     }
     checkboxList.forEach((checkBox, index) => {
+        // console.log('button is clicked')
         checkBox.onclick = () => checkFunc(index);
     })
 
@@ -174,7 +175,7 @@ export function updateEventListeners(){
         renderNotes();
         renderDoneNotes();
         // updateLocalStorage();
-        updateDb(); 
+        updateDb();
         updateEventListeners();
     }
     let doneCheckBoxList = document.querySelectorAll('.doneNoteCheck');
