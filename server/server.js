@@ -127,7 +127,40 @@ app.post('/home', (req, res, next)=> {
             status : 2
         });
     }
-}) 
+    printUsers();
+});
+
+
+app.put('/home', (req, res, next) => {
+
+    res.setHeader("Content-type" , "application/json");
+
+    console.log('in .put(/home) req.body : ' , req.body);
+    if(req.body){
+        const {email, reqNotes, reqDoneNotes} = req.body;
+
+        if(authorizeLocal(req)){
+            let userFound = getUserOf(email);
+            userFound.notes = reqNotes;
+            userFound.notesDone = reqDoneNotes;
+            
+            res.status(200).json({
+                status : 0
+            });
+        } 
+        else {
+            res.status(201).json({
+                status : 1
+            });
+        }
+    }
+    else {
+        res.status(201).json({
+            status : 2
+        });
+    }
+    printUsers();
+});
 
 
 
@@ -142,6 +175,11 @@ function authorizeLocal(req){
     const {email} = req.body;
     if(email) return true;
     else return false;
+}
+function printUsers(){
+    console.log('users ---------------------------------------------------\n', 
+        JSON.stringify(users, null, 2)
+    )
 }
 
 
@@ -187,5 +225,14 @@ Explanation :
         The correct usage is res.setHeader("Content-Type", "application/json").
         The incorrect usage may cause the server to malfunction or ignore the header, contributing to response issues.
 Time Taken to Debug: 5.40PM to 8.36PM
+
+
+3. req.body is undefined 
+problem : req.body in app.put('home/) is undefined, and hence db isnt updating
+Explantion : the spelling header , instead or headers
+
+
+4. checkFunc working only once
+problem : once the check button is clicked, it stops functioning.. i.e.  it works only once
 
 */

@@ -42,7 +42,7 @@ renderNotes();
 console.log('In home.js below renderNotes');    // --------------------------------------------------------
 
 export function renderDoneNotes(){
-    console.log('rendering doneNotes');   // --------------------------------------------------------
+    console.log('rendering doneNotes ----------------');   // --------------------------------------------------------
     console.log('doneNotes: ',doneNotes);   // --------------------------------------------------------
     
 
@@ -86,21 +86,20 @@ export function updateEventListeners(){
     function checkFunc(index){
         doneNotes.unshift(new List(notes[index].id, notes[index].note, notes[index].time));
         notes.splice(index, 1);
-        renderNotes();
-        renderDoneNotes();
-        updateLocalStorage();
         updateEventListeners();
+        renderDoneNotes(); renderNotes();
+        updateDb();
     }
     checkboxList.forEach((checkBox, index) => {
         checkBox.onclick = () => checkFunc(index);
-    }) 
+    })
 
     function editFunc(index){
         editButtonList[index].style.display = 'none';
         saveButtonList[index].style.display = 'block';
         dateList[index].style.display = 'none';
         inputList[index].readOnly = false;
-        
+
         inputList[index].focus();
         inputList[index].setSelectionRange(inputList[index].value.length, inputList[index].value.length);
         // updateLocalStorage();
@@ -123,7 +122,8 @@ export function updateEventListeners(){
 
         notes[index].note = inputList[index].value;
         console.log('Notes: '); console.log(notes);    // --------------------------------------------------------
-        updateLocalStorage();
+        // updateLocalStorage();
+        updateDb();
     }
     saveButtonList.forEach((saveButton, index) => {
         // saveButton.removeEventListener('click', () => saveFunc(index));
@@ -140,7 +140,8 @@ export function updateEventListeners(){
 
     function deleteFunc(index)  {
         notes.splice(index, 1);
-        updateLocalStorage();
+        // updateLocalStorage();
+        updateDb();
         // window.location.reload();
         renderNotes();
         updateEventListeners();
@@ -156,7 +157,8 @@ export function updateEventListeners(){
     function doneDeleteFunc(index){
         doneNotes.splice(index, 1);
 
-        updateLocalStorage();
+        // updateLocalStorage();
+        updateDb();
         renderDoneNotes();
         updateEventListeners();
         console.log('DoneNotes: '); console.log(doneNotes);   // --------------------------------------------------------
@@ -171,7 +173,8 @@ export function updateEventListeners(){
         doneNotes.splice(index, 1);
         renderNotes();
         renderDoneNotes();
-        updateLocalStorage();
+        // updateLocalStorage();
+        updateDb(); 
         updateEventListeners();
     }
     let doneCheckBoxList = document.querySelectorAll('.doneNoteCheck');
@@ -182,34 +185,41 @@ export function updateEventListeners(){
 }
 updateEventListeners();
 
-function updateDb(action, from, note){
-    if(action === 'post'){
-        fetch('http://localhost:8899/home', {
-            method: 'POST',
-            headers : {
-                "Content-Type" : "application/json"
-            },
-            body : JSON.stringify({
-                email : current_user.email,
-                note : note
-            })
+export function updateDb(){
+    console.log('Updating db ...');
+    fetch('http://localhost:8899/home', {
+        method: 'PUT',
+        headers : {
+            "Content-Type" : "application/json"
+        },
+        body : JSON.stringify({
+            email : current_user.email,
+            reqNotes : notes,
+            reqDoneNotes : doneNotes
         })
-    }
-    else if(action === 'delete'){
-        if(from === 'notes'){
-
+    })
+    .then( response => response.json())
+    .then(data => {
+        if(data.status === 0){
+            console.log('Updated');
         }
-        else if (from === 'done'){
-
+        else if(data.status === 1){
+            console.log('Authorization Problem , Please try to log-in again maybe');
         }
-    }
+        else if(data.status === 2){
+            console.log('request is undefined');
+        }
+    })
+    .catch((err) => {
+        console.log(err);
+    });
 }
 
 
-export function updateLocalStorage(){
-    localStorage.setItem('notes', JSON.stringify(notes));
-    localStorage.setItem('doneNotes', JSON.stringify(doneNotes));
-}
+// export function updateLocalStorage(){
+//     localStorage.setItem('notes', JSON.stringify(notes));
+//     localStorage.setItem('doneNotes', JSON.stringify(doneNotes));
+// }
 
 document.querySelector('.add-button').addEventListener('click', () => {
     let inp = document.querySelector('.new-input');
@@ -246,15 +256,11 @@ document.querySelector('.add-add').addEventListener('click', () => {
     // let newHTML =  returnHTML(notes[notes.length -1]);
     // document.querySelector('.notesListDiv').innerHTML = x.slice(0, 0) + newHTML + x.slice(0);
     renderNotes();
+    updateDb();
     inp.value = ``;
 
-    updateLocalStorage();
+    // updateLocalStorage();
     document.querySelector('.add-new-note-div').style.display = 'none';
     document.querySelector('main').style.filter = 'none';
     updateEventListeners();
 });
-
-
-
-
-

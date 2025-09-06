@@ -1,4 +1,4 @@
-import { updateLocalStorage, renderNotes, renderDoneNotes, updateEventListeners } from "./home.js";
+import { updateDb, renderNotes, renderDoneNotes, updateEventListeners } from "./home.js";
 export class List {
     id;
     note;
@@ -14,8 +14,8 @@ console.log('In list.js  ------- for debugging');
 
 export let notes = [];
 export let doneNotes = [];
-let current_user = JSON.parse(localStorage.getItem('localEmail'));
-console.log('In list.js --------------- \n Curret_user : ',current_user);
+let current = JSON.parse(localStorage.getItem('localEmail'));
+console.log('In list.js --------------- \n Curret_user : ',current);
 export function loadNotes(){
     console.log('In loadNotes in list.js------------------- ')
     fetch('http://localhost:8899/home', {
@@ -24,7 +24,7 @@ export function loadNotes(){
             "Content-Type" : "application/json",
         },
         body : JSON.stringify({
-            email : current_user.email
+            email : current.email
         })
     })
     .then(response =>{console.log('response : ', response); return response.json()})
@@ -71,6 +71,7 @@ function repaint(){
 
 
 loadNotes();
+// repaint();
 // loadUndoneNotes();
 
 /*
@@ -135,8 +136,8 @@ doneNotes = [
 });
 
 // */
-
-updateLocalStorage();
+// updateDb();
+// updateLocalStorage();
 
 
 
