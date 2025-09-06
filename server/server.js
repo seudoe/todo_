@@ -10,16 +10,17 @@ console.log(path.join(__dirname , '../home.html'));
 const app = express();
 const cors = require('cors');
 const middle = require('./middleman.js');
-const {emailExists, authorized, getUserOf} = middle;
+const {emailExists, authorized, getUserOf, addUser} = middle;
 const { users } = require('./db.js');
 
 app.use(cors())
 app.use(express.json())
 
 app.get('/', (req, res) => {
-    res.status(400).send('Change ur url');
+    res.status(400).sendFile(path.join(__dirname, '../index.html'));
+    console.log('sent index.html')
 });
-
+  
 
 
 // app.get('/login', (req, res) => {
@@ -47,43 +48,76 @@ app.get('/login{/}' , (req, res) => {
     console.log('sent login.html')
 });
 
-app.post('/login{/}', 
-    (req, res, next) => {
-        // console.log('GOt a post req ant login/');
-        console.log('req.body in app.post(/login)---- ', req.body)
-        // res.setHeader('Content-Type', 'text/plain')
-        // res.status(200).send('Response Sent');
 
-        next();
 
-    },
-    (req, res, next)=>{
-        let reqObj = req.body;
-        if(authorized(reqObj.email, reqObj.pass).status){
-            console.log('status = 0');
-            res.setHeader("Content-Type" , "text/plain")
-            // res.status(200).sendFile(path.join(__dirname, '../home.html'));   // this causes the error : SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
-            // when you do a fetch POST request (like in your login flow), the fetch call only receives the response data (e.g., JSON or text) 
-            // but does not automatically cause the browser to navigate to a new page. Fetch is designed for background HTTP requests, not for page navigation
+function loginChecker(req, res){
+    let reqObj = req.body;
+    if(authorized(reqObj.email, reqObj.pass).status){
+        console.log('status = 0');
+        res.setHeader("Content-Type" , "text/plain")
+        // res.status(200).sendFile(path.join(__dirname, '../home.html'));   // this causes the error : SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+        // when you do a fetch POST request (like in your login flow), the fetch call only receives the response data (e.g., JSON or text) 
+        // but does not automatically cause the browser to navigate to a new page. Fetch is designed for background HTTP requests, not for page navigation
 
-            res.status(202).send({
+        res.status(202).send({
+            status : 0
+        })
+    }
+    else if (authorized(reqObj.email, reqObj.pass).string === 'Exists'){
+        console.log('status = 1');
+        res.setHeader("Content-Type" , "application/json")
+        res.status(300).send({
+            status : 1
+        })
+    }  
+    else if (authorized(reqObj.email, reqObj.pass).string === 'Not-exists') {
+        console.log('status = 2');
+        res.setHeader("Content-Type" , "application/json")
+        res.status(300).send({
+            status:2
+        })
+    }
+}
+function registerer(req, res) {
+    if(req.body){
+        res.setHeader("Content-Type" , "application/json")
+        const reqObj = req.body;
+        const {email, pass} = reqObj;
+        if(addUser(email, pass)){ 
+            console.log('during register: 0', )
+            res.status(200).send({
                 status : 0
             })
         }
-        else if (authorized(reqObj.email, reqObj.pass).string === 'Exists'){
-            console.log('status = 1');
-            res.setHeader("Content-Type" , "application/json")
-            res.status(300).send({
+        else {
+            console.log('during register: 1', )
+            res.status(201).send({
                 status : 1
             })
-        }  
-        else if (authorized(reqObj.email, reqObj.pass).string === 'Not-exists') {
-            console.log('status = 2');
-            res.setHeader("Content-Type" , "application/json")
-            res.status(300).send({
-                status:2
-            })
-        } 
+        }
+    }
+    else {
+        console.log('Req is undefined')
+        res.status(202).send({
+            status : 2
+        })
+    }
+}
+app.post('/login{/}', 
+    (req, res, next) => {
+        console.log('req.body in app.post(/login)---- ', req.body)
+        
+        let reqObj = req.body;
+        if(reqObj){
+            const { action } = reqObj;
+            console.log('action : ' ,action)
+            if(action == 1) return loginChecker(req, res);
+            else if(action == 0) return registerer(req, res);
+        }
+        next();
+    },
+    (req, res, next)=>{
+        console.log('Finalizing');
     },
     (err, req, res, next) => {
         if(err) console.log('Errors: --------------------\n',err);
@@ -127,7 +161,7 @@ app.post('/home', (req, res, next)=> {
             status : 2
         });
     }
-    printUsers();
+    // printUsers();
 });
 
 
@@ -159,7 +193,7 @@ app.put('/home', (req, res, next) => {
             status : 2
         });
     }
-    printUsers();
+    // printUsers();
 });
 
 

@@ -18,7 +18,7 @@ header h1{
 }
 .logout-button{
     color: black;
-    background-color: transparent;
+    /* background-color: transparent; */
     border: none;
     font-size: 20px;
     cursor: pointer;

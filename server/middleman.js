@@ -30,4 +30,29 @@ function getUserOf(email){
     return users.find(user => user.email === email);
 }
 
-module.exports = { emailExists, authorized, getUserOf };
+function addUser(email, pass){
+    if(emailExists(email)){
+        return false;
+    }
+    users.push({
+        email : email,
+        password: pass,
+        notes: [
+            {
+                id: '0001',
+                note : 'Welcome Note',
+                date : 'somedate'
+            }
+        ],
+        notesDone: [
+            {
+                id: '0001',
+                note : 'Done note',
+                date : 'sone'
+            }
+        ]
+    });
+    return true;
+}
+
+module.exports = { emailExists, authorized, getUserOf, addUser };
