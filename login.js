@@ -1,12 +1,16 @@
 console.log('Hello');
 
+localStorage.setItem('localEmail', JSON.stringify({email : 'Email'}));
 
-const local = JSON.parse(localStorage.getItem('and-include-a-reusable-footer')); 
+
+// const local = JSON.parse(localStorage.getItem('localEmail')); 
 
 let emailInp = document.querySelector('.emailInp');
 let passInp = document.querySelector('.passwInp');
 
 let loginButton = document.querySelector('.login-button');
+
+let current_user = {};
 
 loginButton.onclick = () => {
     console.log('Sending: ');
@@ -33,7 +37,12 @@ loginButton.onclick = () => {
                 console.log('U r right , clearing .incorrect msg');
                 document.querySelector('.incorrect').innerHTML = ``;
                 window.location.href = 'http://localhost:8899/home';
-            } 
+                current_user = {
+                    email : emailInp.value
+                }
+                // ----------------------------------------------------
+                localStorage.setItem('localEmail', JSON.stringify(current_user));
+            }
             else if(data.status === 1 || data.status === 2){
                 document.querySelector('.incorrect').innerHTML = `Incorrect Email or Password`;
             }

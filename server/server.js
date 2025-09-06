@@ -5,80 +5,13 @@ const fs = require('fs').promises;
 console.log(__dirname);
 console.log(path.join(__dirname , '../home.html'));
 
-let home_html = ``;
-let home_js = ``;
-let home_css = ``;
-let login_page = ``;
-let login_js = ``;
-let list_js = ``;
-async function loadFiles(params) {
-    home_html = await fs.readFile(path.join(__dirname, '../home.html'), (err, data) => {
-        if(err){
-            console.log('unable to read home.html');
-            return null;
-            // console.log('error inhome.html');
-        }
-        console.log('reading home.html', data);
-        return data;
-    })
-    home_js =  await fs.readFile(path.join(__dirname, '../home.js'), (err, data) => {
-        if(err){
-            console.log('unable to read home.js');
-            return null;
-        }
-        console.log('reading home.js', data);
-        return data;
-    })
-    home_css = await fs.readFile(path.join(__dirname, '../home.css'), (err, data) => {
-        if(err){
-            console.log('unable to read home.css');
-            return null;
-        }
-        console.log('reading home.css', data);
-        return data;
-    });
-    login_page = await fs.readFile(path.join(__dirname, '../login.html'), (err, data) => {
-        if(err){
-            console.log('unable to read login.html');
-            return null;
-        }
-        console.log('reading login.html', data);
-        return data;
-    })
-    login_js = await fs.readFile(path.join(__dirname, '../login.js'), (err, data) => {
-        if(err){
-            console.log('unable to read login.js');
-            return null;
-        }
-        console.log('reading login.js', data);
-        return data;
-    })
-    list_js = await fs.readFile(path.join(__dirname, '../list.js'), (err, data) => {
-        if(err){
-            console.log('unable to read list.js');
-            return null;
-        }
-        console.log('reading list.js', data);
-        // console.log('reading list.js', data);
-        return data;
-    });
-}
 
-// loadFiles().then( () => {
-//     console.log(home_html + '\n ---------------------------------------------------------------------- \n' 
-//         +  home_js + '\n ---------------------------------------------------------------------------- \n' 
-//         +  home_css + '\n ----------------------------------------------------------------------------- \n' 
-//         +  login_page + '\n ------------------------------------------------------------------- \n' 
-//         +  login_js + '\n ------------------------------------------------------------------------- \n' 
-//         +  list_js
-//     );
-// })
- 
 
 const app = express();
 const cors = require('cors');
 const middle = require('./middleman.js');
-const {emailExists, authorized} = middle;
+const {emailExists, authorized, getUserOf} = middle;
+const { users } = require('./db.js');
 
 app.use(cors())
 app.use(express.json())
@@ -98,17 +31,26 @@ app.get('/', (req, res) => {
 
 // This wouldnt wort,  coz how do we send login.js?
 
+// From CHATGPT -------- to fix localStorage problem
+// import { fileURLToPath } from "url";
+// // const app = express();
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = path.dirname(__filename);
+// ----------------------- End of gpt code
+
+
 // Create public/
-app.use(express.static(path.join(__dirname, "../../todo_withServer")));
+app.use(express.static(path.join(__dirname, "..")));
 
 app.get('/login{/}' , (req, res) => {
     res.status(200).sendFile(path.join(__dirname, '../login.html'));
+    console.log('sent login.html')
 });
 
 app.post('/login{/}', 
     (req, res, next) => {
-        // console.log('GOt a  post --- req = ', req);
-        console.log('req.body ---- ', req.body)
+        // console.log('GOt a post req ant login/');
+        console.log('req.body in app.post(/login)---- ', req.body)
         // res.setHeader('Content-Type', 'text/plain')
         // res.status(200).send('Response Sent');
 
@@ -141,25 +83,109 @@ app.post('/login{/}',
             res.status(300).send({
                 status:2
             })
-        }
+        } 
     },
     (err, req, res, next) => {
-        if(err) console.log(err);
+        if(err) console.log('Errors: --------------------\n',err);
+
         // do nothing for now
 
     }
 );
 
-
+ 
 app.get('/home', (req, res) => {
     res.status(202).sendFile(path.join(__dirname, '../home.html'));
+    console.log('sent home.html ');
 })
 
+app.post('/home', (req, res, next)=> {
+    res.setHeader("Content-type" , "application/json");
+
+    let {email} = req.body;
+    console.log(`----------------------------------------------------
+        \nreq.body in app.post(/home)-  `,req.body);
+    if(authorizeLocal(req)){
+        if(emailExists(email)){
+            let userFound = getUserOf(email);
+            res.status(200).json({
+                status : 0,
+                allnotes : {
+                    notes : userFound.notes,
+                    notesDone : userFound.notesDone
+                }
+            });
+        }
+        else{
+            res.status(400).json({
+                status : 1
+            });
+        } 
+    }
+    else {
+        res.status(300).json({
+            status : 2
+        });
+    }
+}) 
 
 
 
-const PORT  = 8899;
-app.listen(PORT, (err) => {
+
+const PORT = 8899;
+app.listen(PORT, 'localhost', (err) => {
     if(err) console.log(err);
-    console.log(`Server running on PORT :${PORT}`);
+    console.log(`Server running on ${app.url}:${PORT}`);
 })
+
+function authorizeLocal(req){
+    const {email} = req.body;
+    if(email) return true;
+    else return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+Some Errors :
+1. local Storage Problem
+problem : the .getItem in list.js was returning null, which was .setItem in login.js
+reason : there was a difference between the urls of login.js and list.js
+        The localStorages of differenct url and address is different
+SOLN: changed all the urls to localhost 
+Time Taken to Debug : 2.30PM to 5.30PM
+
+
+2. Internal server error 500 in fetch() in list.js
+problem : the fetch-post in list.js is creating problem 500 Internal server error
+        it was trying to parse a html file, and showing parseError of '<' in console
+        {
+            the problem of parseError was actually due to :
+            when the error of 500 comes, it tries to send an error page - which has html
+            and that html file is being parse by json into object - which clearly gives error
+        }
+Explanation :
+    Server-side 500 Internal Server Error on POST /home:
+        The server code in server.js uses a variable users to find the user by email and return their notes. However, this users variable is not declared or imported in server.js. It is actually defined and exported in db.js and imported in middleman.js.
+        Since server.js does not import users from db.js, when the POST /home route tries to access users.find(...), it causes a ReferenceError, which leads to the 500 Internal Server Error.
+        To fix this, server.js must import users from db.js (e.g., const { users } = require('./db.js');) or access it via the imported middleman.js if it exports users.
+        Without this fix, the server cannot process the request properly and returns an HTML error page, which is why the client receives HTML instead of JSON.
+    Incorrect res.setHeader usage in server.js:
+        In the POST /home route, the code calls res.setHeader({ "Content-type" : "application/json" }). This is incorrect usage of res.setHeader.
+        The correct usage is res.setHeader("Content-Type", "application/json").
+        The incorrect usage may cause the server to malfunction or ignore the header, contributing to response issues.
+Time Taken to Debug: 5.40PM to 8.36PM
+
+*/

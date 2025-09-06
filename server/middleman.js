@@ -26,4 +26,8 @@ function authorized(email, password) {
     }
 }
 
-module.exports = { emailExists, authorized };
+function getUserOf(email){
+    return users.find(user => user.email === email);
+}
+
+module.exports = { emailExists, authorized, getUserOf };

@@ -1,4 +1,4 @@
-import { updateLocalStorage } from "./home.js";
+import { updateLocalStorage, renderNotes, renderDoneNotes, updateEventListeners } from "./home.js";
 export class List {
     id;
     note;
@@ -10,15 +10,58 @@ export class List {
     }
 }
 
+console.log('In list.js  ------- for debugging');
+
 export let notes = [];
 export let doneNotes = [];
-// export function loadNotes(){
-//     notes = JSON.parse(localStorage.getItem('notes'));
-//     notes = notes.map((note, index) => {
-//         return new List(note.id, note.note, dayjs(note.time));
-//     })
-// }
+let current_user = JSON.parse(localStorage.getItem('localEmail'));
+console.log('In list.js --------------- \n Curret_user : ',current_user);
+export function loadNotes(){
+    console.log('In loadNotes in list.js------------------- ')
+    fetch('http://localhost:8899/home', {
+        method : 'POST',
+        headers :{
+            "Content-Type" : "application/json",
+        },
+        body : JSON.stringify({
+            email : current_user.email
+        })
+    })
+    .then(response =>{console.log('response : ', response); return response.json()})
+    .then (data => {
+        console.log('response data : ',data);
+        if(data){
+            if(data.status === 0){
+                notes = data.allnotes.notes;
+                doneNotes = data.allnotes.notesDone;
 
+                notes = notes.map((note, index) => {
+                    return new List(note.id, note.note, dayjs(note.time));
+                })
+                doneNotes = doneNotes.map((note, index) => {
+                    return new List(note.id, note.note, dayjs(note.time));
+                })
+                repaint();
+            }
+            if(data.status === 1 || data.status === 2){
+                window.location.href = 'http://localhost:8899/login';
+                return;
+            }
+        }
+    })
+    .catch(err => {
+        console.log('Errors: --------------------\n',err);
+    })
+
+    // notes = JSON.parse(localStorage.getItem('notes'));
+
+}
+
+function repaint(){
+    renderDoneNotes();
+    renderNotes();
+    updateEventListeners();
+}
 // export function loadUndoneNotes(){
 //     doneNotes = JSON.parse(localStorage.getItem('doneNotes'));
 //     doneNotes = doneNotes.map((note, index) => {
@@ -27,10 +70,10 @@ export let doneNotes = [];
 // }
 
 
-// loadNotes();
+loadNotes();
 // loadUndoneNotes();
 
-// /*
+/*
 notes = [
     {
         id : '0001',

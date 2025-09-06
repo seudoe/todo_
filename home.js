@@ -1,10 +1,16 @@
 // console.log('In home.js ');
-import { notes, List, doneNotes } from "./list.js";
+// import { act } from "react";
+// import { current_user } from "./login.js";
 
-console.log(notes);   // --------------------------------------------------------
+let current_user = JSON.parse(localStorage.getItem('localEmail'));
+console.log('In home.js after list.js ------- for debuggin ');
+console.log('current_user in home.js: ', current_user)
+import { notes, List, doneNotes } from "./list.js";    // turns out whereever u put immport - it is executed first in the file
+
+console.log('Notes: ',notes);   // --------------------------------------------------------
 console.log('In home.js 1');   // --------------------------------------------------------
 
-function renderNotes(){
+export function renderNotes(){
     let notesList = document.querySelector('.notesListDiv');
     notesList.innerHTML = ``;       // reseting the div
     notes.forEach((note, index) => {
@@ -35,9 +41,9 @@ renderNotes();
 // ${note.date.format('HH:mm   DD/MM/YYYY')}
 console.log('In home.js below renderNotes');    // --------------------------------------------------------
 
-function renderDoneNotes(){
+export function renderDoneNotes(){
     console.log('rendering doneNotes');   // --------------------------------------------------------
-    console.log(doneNotes);   // --------------------------------------------------------
+    console.log('doneNotes: ',doneNotes);   // --------------------------------------------------------
     
 
     let doneNotesList = document.querySelector('.doneNotesListDiv');
@@ -65,7 +71,7 @@ function renderDoneNotes(){
 renderDoneNotes();
 
 
-function updateEventListeners(){
+export function updateEventListeners(){
 
     let checkboxList = document.querySelectorAll('.noteCheck');
 
@@ -175,6 +181,30 @@ function updateEventListeners(){
 
 }
 updateEventListeners();
+
+function updateDb(action, from, note){
+    if(action === 'post'){
+        fetch('http://localhost:8899/home', {
+            method: 'POST',
+            headers : {
+                "Content-Type" : "application/json"
+            },
+            body : JSON.stringify({
+                email : current_user.email,
+                note : note
+            })
+        })
+    }
+    else if(action === 'delete'){
+        if(from === 'notes'){
+
+        }
+        else if (from === 'done'){
+
+        }
+    }
+}
+
 
 export function updateLocalStorage(){
     localStorage.setItem('notes', JSON.stringify(notes));
