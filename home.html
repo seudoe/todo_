@@ -6,6 +6,27 @@
         font-family: Arial;
       }
     </style>
+
+    <script>
+      try{
+        console.log(JSON.parse(localStorage.getItem('localEmail')))
+      } 
+      catch(err){
+        console.log(err);
+        window.location.href = 'http://localhost:8899/login';
+      }
+      window.onload = () => {
+        let {email} = JSON.parse(localStorage.getItem('localEmail'));
+        if(email){
+
+        }
+        else {
+          window.location.href = 'http://localhost:8899/login';
+        }
+      }
+    </script>
+
+    
     <link rel="stylesheet" href="./home.css"> 
 
     <!-- <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,8 +42,16 @@
   </head>
   <body>
     <header>
-      
+      <div class="main-logo">
+        <h1>Todoer</h1>
+      </div>
+      <div class="log-out">
+        <button class="logout-button">
+          Logout
+        </button>
+      </div>
     </header>
+
     <main>
       <div class="left-side">
         <div class="undone-label">

@@ -1,6 +1,6 @@
 console.log('Hello');
 
-localStorage.setItem('localEmail', JSON.stringify({email : 'Email'}));
+// localStorage.setItem('localEmail', JSON.stringify({email : 'Email'}));
 
 
 // const local = JSON.parse(localStorage.getItem('localEmail')); 

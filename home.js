@@ -265,3 +265,9 @@ document.querySelector('.add-add').addEventListener('click', () => {
     document.querySelector('main').style.filter = 'none';
     updateEventListeners();
 });
+
+let logoutButton = document.querySelector('.logout-button');
+logoutButton.onclick = () => {
+    localStorage.setItem('localEmail', '');
+    window.location.href = 'http://localhost:8899/login'
+}
