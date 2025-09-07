@@ -55,4 +55,10 @@ function addUser(email, pass){
     return true;
 }
 
+function printUsers(){
+    console.log('users ---------------------------------------------------\n', 
+        JSON.stringify(users, null, 2)
+    )
+}
+
 module.exports = { emailExists, authorized, getUserOf, addUser };

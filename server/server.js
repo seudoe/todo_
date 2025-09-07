@@ -10,8 +10,7 @@ console.log(path.join(__dirname , '../home.html'));
 const app = express();
 const cors = require('cors');
 const middle = require('./middleman.js');
-const {emailExists, authorized, getUserOf, addUser} = middle;
-const { users } = require('./db.js');
+const {emailExists, authorized, getUserOf, addUser, printUsers} = middle;
 
 app.use(cors())
 app.use(express.json())
@@ -210,11 +209,7 @@ function authorizeLocal(req){
     if(email) return true;
     else return false;
 }
-function printUsers(){
-    console.log('users ---------------------------------------------------\n', 
-        JSON.stringify(users, null, 2)
-    )
-}
+
 
 
 
